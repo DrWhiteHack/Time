@@ -20,17 +20,42 @@
         }
         button {
             padding: 10px 20px;
-            font-size: 20px;
+            font-size: 24px;
             margin: 10px;
             cursor: pointer;
             border: none;
             border-radius: 5px;
-            background-color: #4CAF50;
-            color: white;
+            background-color: #333; /* Dark grey */
+            color: #fff;
+        }
+        button.cancel {
+            background-color: #f44336; /* Red */
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
         input[type="range"] {
             width: 200px;
             margin-top: 20px;
+        }
+        #adjustButtons {
+            margin-top: 20px;
+        }
+        #adjustButtons button {
+            font-size: 20px;
+            margin: 0 5px;
+            padding: 5px 10px;
+            background-color: #555; /* Dark grey */
+        }
+        #minimalControls {
+            display: none;
+            margin-top: 20px;
+        }
+        #minimalControls button {
+            font-size: 20px;
+            padding: 5px 10px;
+            background-color: #333; /* Dark grey */
         }
     </style>
 </head>
@@ -39,9 +64,18 @@
 <div id="timer">
     <h1 id="timerDisplay">25:00</h1>
 
+    <div id="adjustButtons">
+        <button onclick="adjustTimer(-5)">-</button>
+        <button onclick="adjustTimer(5)">+</button>
+    </div>
+
     <button id="startButton" onclick="startTimer()">Start</button>
     <button id="pauseButton" onclick="pauseTimer()" disabled>Pause</button>
     <button id="resetButton" onclick="resetTimer()">Reset</button>
+
+    <div id="minimalControls">
+        <button class="cancel" onclick="cancelTimer()">✕</button>
+    </div>
 
     <div>
         <label for="productivityRange">Productivity: </label>
@@ -50,19 +84,25 @@
     </div>
 </div>
 
-<audio id="timerCompleteSound" src="https://www.soundjay.com/button/beep-07.wav"></audio>
-
 <script>
     let timer;
     let timeLeft;
     let isTimerRunning = false;
+    let isWorkSession = true; // Track if it's a work session or break
+
     const timerDisplay = document.getElementById('timerDisplay');
     const startButton = document.getElementById('startButton');
     const pauseButton = document.getElementById('pauseButton');
     const resetButton = document.getElementById('resetButton');
+    const minimalControls = document.getElementById('minimalControls');
     const productivityRange = document.getElementById('productivityRange');
     const productivityValue = document.getElementById('productivityValue');
-    const timerCompleteSound = document.getElementById('timerCompleteSound');
+
+    function adjustTimer(minutes) {
+        const newTime = Math.max(parseInt(productivityRange.value) + minutes, 1);
+        productivityRange.value = newTime;
+        updateTimerLength();
+    }
 
     function startTimer() {
         if (!isTimerRunning) {
@@ -71,68 +111,68 @@
             updateTimerDisplay();
             timer = setInterval(decrementTimer, 1000);
             isTimerRunning = true;
-            startButton.disabled = true;
-            pauseButton.disabled = false;
-            resetButton.disabled = false;
-
-            // Request screen wake lock (if available)
-            if ('wakeLock' in navigator) {
-                navigator.wakeLock.request('screen').then(() => {
-                    console.log('Screen wake lock activated');
-                }).catch((error) => {
-                    console.error('Failed to activate screen wake lock:', error);
-                });
-            }
+            toggleControls(false); // Hide main controls during timer
+            minimalControls.style.display = 'block'; // Show minimal cancel button
         }
     }
 
     function decrementTimer() {
         timeLeft--;
-        if (timeLeft < 0) {
+        updateTimerDisplay();
+        if (timeLeft === 0) {
             clearInterval(timer);
             isTimerRunning = false;
-            timerCompleteSound.play(); // Play sound on timer completion
-            alert("Time's up!");
-            startButton.disabled = false;
-            pauseButton.disabled = true;
-            resetButton.disabled = false;
-
-            // Release screen wake lock (if available)
-            if ('wakeLock' in navigator) {
-                navigator.wakeLock.release().then(() => {
-                    console.log('Screen wake lock released');
-                }).catch((error) => {
-                    console.error('Failed to release screen wake lock:', error);
-                });
+            if (isWorkSession) {
+                startBreak();
+            } else {
+                startWorkSession();
             }
-        } else {
-            updateTimerDisplay();
         }
+    }
+
+    function startBreak() {
+        isWorkSession = false;
+        productivityRange.value = 5; // 5 minutes break
+        updateTimerLength();
+        resetTimer();
+        startTimer();
+    }
+
+    function startWorkSession() {
+        isWorkSession = true;
+        productivityRange.value = 25; // 25 minutes work session
+        updateTimerLength();
+        resetTimer();
+        startTimer();
     }
 
     function pauseTimer() {
         clearInterval(timer);
         isTimerRunning = false;
-        startButton.disabled = false;
-        pauseButton.disabled = true;
+        toggleControls(true); // Show main controls when paused
+        minimalControls.style.display = 'none'; // Hide minimal cancel button
     }
 
     function resetTimer() {
         clearInterval(timer);
         isTimerRunning = false;
-        startButton.disabled = false;
-        pauseButton.disabled = true;
+        isWorkSession = true;
+        toggleControls(true); // Show main controls after reset
+        minimalControls.style.display = 'none'; // Hide minimal cancel button
         timeLeft = productivityRange.value * 60;
         updateTimerDisplay();
+    }
 
-        // Release screen wake lock (if available)
-        if ('wakeLock' in navigator) {
-            navigator.wakeLock.release().then(() => {
-                console.log('Screen wake lock released');
-            }).catch((error) => {
-                console.error('Failed to release screen wake lock:', error);
-            });
-        }
+    function cancelTimer() {
+        pauseTimer();
+        resetTimer();
+    }
+
+    function toggleControls(show) {
+        startButton.style.display = show ? 'inline-block' : 'none';
+        pauseButton.style.display = show ? 'inline-block' : 'none';
+        resetButton.style.display = show ? 'inline-block' : 'none';
+        adjustButtons.style.display = show ? 'block' : 'none';
     }
 
     function updateTimerDisplay() {
