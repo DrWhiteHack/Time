@@ -62,6 +62,11 @@
         #minimalControls {
             display: none; /* Hide minimal controls by default */
         }
+        @media (max-width: 600px) {
+            #timer {
+                font-size: 8vw; /* Adjust font size for smaller screens */
+            }
+        }
     </style>
 </head>
 <body>
@@ -120,6 +125,7 @@
             toggleControls(false); // Hide main controls during timer
             minimalControls.style.display = 'block'; // Show minimal cancel button
             productivityControls.style.display = 'none'; // Hide productivity controls
+            hideOtherButtons();
         }
     }
 
@@ -159,6 +165,7 @@
         toggleControls(true); // Show main controls when paused
         minimalControls.style.display = 'none'; // Hide minimal cancel button
         productivityControls.style.display = 'block'; // Show productivity controls
+        showOtherButtons();
     }
 
     function resetTimer() {
@@ -170,6 +177,7 @@
         productivityControls.style.display = 'block'; // Show productivity controls
         timeLeft = productivityRange.value * 60;
         updateTimerDisplay();
+        showOtherButtons();
     }
 
     function cancelTimer() {
@@ -189,6 +197,24 @@
         if (!isTimerRunning) {
             timerDisplay.textContent = `${minutes}:00`;
         }
+    }
+
+    function toggleControls(disabled) {
+        startButton.disabled = !disabled;
+        pauseButton.disabled = disabled;
+        resetButton.disabled = disabled;
+    }
+
+    function hideOtherButtons() {
+        startButton.style.display = 'none';
+        pauseButton.style.display = 'none';
+        resetButton.style.display = 'none';
+    }
+
+    function showOtherButtons() {
+        startButton.style.display = 'inline-block';
+        pauseButton.style.display = 'inline-block';
+        resetButton.style.display = 'inline-block';
     }
 </script>
 
