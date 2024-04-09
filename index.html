@@ -14,13 +14,15 @@
             background-color: #000;
             color: #fff;
             margin: 0;
+            overflow: hidden; /* Prevent scrolling on mobile */
         }
         #timer {
             text-align: center;
+            font-size: 10vw; /* Responsive font size based on viewport width */
         }
         button {
             padding: 10px 20px;
-            font-size: 24px;
+            font-size: 5vw; /* Responsive button font size */
             margin: 10px;
             cursor: pointer;
             border: none;
@@ -35,16 +37,12 @@
             opacity: 0.5;
             cursor: not-allowed;
         }
-        input[type="range"] {
-            width: 200px;
-            margin-top: 20px;
-        }
         #adjustButtons {
             margin-top: 20px;
         }
         #adjustButtons button {
-            font-size: 20px;
-            margin: 0 5px;
+            font-size: 5vw; /* Responsive adjust button font size */
+            margin: 0 10px;
             padding: 5px 10px;
             background-color: #555; /* Dark grey */
         }
@@ -53,9 +51,17 @@
             margin-top: 20px;
         }
         #minimalControls button {
-            font-size: 20px;
-            padding: 5px 10px;
+            font-size: 5vw; /* Responsive minimal button font size */
+            padding: 10px 20px;
             background-color: #333; /* Dark grey */
+        }
+        #productivityControls {
+            display: block;
+            margin-top: 20px;
+        }
+        #productivityControls label, #productivityControls input {
+            display: inline-block;
+            font-size: 5vw; /* Responsive label and input font size */
         }
     </style>
 </head>
@@ -65,8 +71,8 @@
     <h1 id="timerDisplay">25:00</h1>
 
     <div id="adjustButtons">
-        <button onclick="adjustTimer(-5)">-</button>
-        <button onclick="adjustTimer(5)">+</button>
+        <button onclick="adjustTimer(-1)">-</button>
+        <button onclick="adjustTimer(1)">+</button>
     </div>
 
     <button id="startButton" onclick="startTimer()">Start</button>
@@ -77,10 +83,9 @@
         <button class="cancel" onclick="cancelTimer()">✕</button>
     </div>
 
-    <div>
+    <div id="productivityControls">
         <label for="productivityRange">Productivity: </label>
         <input type="range" min="1" max="60" value="25" id="productivityRange" onchange="updateTimerLength()">
-        <span id="productivityValue">25 minutes</span>
     </div>
 </div>
 
@@ -95,8 +100,8 @@
     const pauseButton = document.getElementById('pauseButton');
     const resetButton = document.getElementById('resetButton');
     const minimalControls = document.getElementById('minimalControls');
+    const productivityControls = document.getElementById('productivityControls');
     const productivityRange = document.getElementById('productivityRange');
-    const productivityValue = document.getElementById('productivityValue');
 
     function adjustTimer(minutes) {
         const newTime = Math.max(parseInt(productivityRange.value) + minutes, 1);
@@ -113,6 +118,7 @@
             isTimerRunning = true;
             toggleControls(false); // Hide main controls during timer
             minimalControls.style.display = 'block'; // Show minimal cancel button
+            productivityControls.style.display = 'none'; // Hide productivity controls
         }
     }
 
@@ -151,6 +157,7 @@
         isTimerRunning = false;
         toggleControls(true); // Show main controls when paused
         minimalControls.style.display = 'none'; // Hide minimal cancel button
+        productivityControls.style.display = 'block'; // Show productivity controls
     }
 
     function resetTimer() {
@@ -159,38 +166,10 @@
         isWorkSession = true;
         toggleControls(true); // Show main controls after reset
         minimalControls.style.display = 'none'; // Hide minimal cancel button
+        productivityControls.style.display = 'block'; // Show productivity controls
         timeLeft = productivityRange.value * 60;
         updateTimerDisplay();
     }
 
     function cancelTimer() {
-        pauseTimer();
-        resetTimer();
-    }
-
-    function toggleControls(show) {
-        startButton.style.display = show ? 'inline-block' : 'none';
-        pauseButton.style.display = show ? 'inline-block' : 'none';
-        resetButton.style.display = show ? 'inline-block' : 'none';
-        adjustButtons.style.display = show ? 'block' : 'none';
-    }
-
-    function updateTimerDisplay() {
-        const minutes = Math.floor(timeLeft / 60);
-        const seconds = timeLeft % 60;
-        const formattedSeconds = seconds < 10 ? `0${seconds}` : `${seconds}`;
-        timerDisplay.textContent = `${minutes}:${formattedSeconds}`;
-    }
-
-    function updateTimerLength() {
-        const minutes = productivityRange.value;
-        productivityValue.textContent = `${minutes} minute${minutes !== 1 ? 's' : ''}`;
-        if (!isTimerRunning) {
-            timeLeft = minutes * 60;
-            updateTimerDisplay();
-        }
-    }
-</script>
-
-</body>
-</html>
+        pause
