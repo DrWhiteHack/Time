@@ -133,8 +133,10 @@
             clearInterval(timer);
             isTimerRunning = false;
             if (isWorkSession) {
+                // Start the break automatically
                 startBreak();
             } else {
+                // Start the work session automatically
                 startWorkSession();
             }
         }
@@ -160,6 +162,16 @@
         clearInterval(timer);
         isTimerRunning = false;
         startButton.disabled = false; // Re-enable start button
+
+        // Exit full screen mode
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        }
+
+        // Release screen wake lock
+        if ('wakeLock' in navigator && navigator.wakeLock) {
+            navigator.wakeLock.release();
+        }
     }
 
     function updateTimerDisplay() {
