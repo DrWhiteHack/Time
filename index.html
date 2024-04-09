@@ -13,7 +13,8 @@
         body {
             font-family: Arial, sans-serif;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            justify-content: space-between;
             align-items: center;
             background-color: #000;
             color: #fff;
@@ -21,10 +22,14 @@
         #container {
             text-align: center;
             width: 100%;
-            height: 100%;
-            overflow-y: auto; /* Enable vertical scrolling within the container */
             padding: 20px;
             box-sizing: border-box;
+        }
+        #sessionType {
+            font-size: 36px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 20px;
         }
         #timer {
             font-size: 10vw; /* Responsive font size based on viewport width */
@@ -41,7 +46,6 @@
         }
         button.cancel {
             background-color: #000;
-            color: #fff;
         }
         button:disabled {
             opacity: 0.5;
@@ -53,20 +57,21 @@
         #adjustButtons button {
             margin: 0 10px;
         }
-        #productivityControls {
-            margin-top: 20px;
-        }
-        #productivityControls label, #productivityControls input {
-            font-size: 24px; /* Productivity label and input font size */
-        }
-        #minimalControls {
-            display: none; /* Hide minimal controls by default */
-        }
         #buttonContainer {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+        #fullscreenButton {
             position: fixed;
             bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
+            right: 20px;
+            font-size: 16px;
+            padding: 10px 20px;
+            border-radius: 5px;
+            background-color: #333;
+            color: #fff;
+            cursor: pointer;
         }
         @media (max-width: 600px) {
             #timer {
@@ -78,6 +83,8 @@
 <body>
 
 <div id="container">
+    <div id="sessionType">FOCUS</div>
+
     <div id="timer">
         <h1 id="timerDisplay">25:00</h1>
 
@@ -86,25 +93,16 @@
             <button onclick="adjustTimer(1)">+</button>
         </div>
 
-        <button id="startButton" onclick="startTimer()">Start</button>
-        <button id="pauseButton" onclick="pauseTimer()" disabled>Pause</button>
-        <button id="resetButton" onclick="resetTimer()">Reset</button>
-
-        <div id="minimalControls">
-            <button class="cancel" onclick="cancelTimer()">✕</button>
+        <div id="buttonContainer">
+            <button id="startButton" onclick="startTimer()">Start</button>
+            <button id="pauseButton" onclick="pauseTimer()" disabled>Pause</button>
+            <button id="resetButton" onclick="resetTimer()">Reset</button>
+            <button class="cancel" onclick="cancelTimer()">Cancel</button>
         </div>
-
-        <div id="productivityControls">
-            <label for="productivityRange">Productivity: </label>
-            <input type="range" min="1" max="60" value="25" id="productivityRange" onchange="updateTimerLength()">
-        </div>
-    </div>
-
-    <div id="buttonContainer">
-        <button onclick="startWorkSession()">Work Session</button>
-        <button onclick="startBreak()">Break</button>
     </div>
 </div>
+
+<button id="fullscreenButton" onclick="toggleFullscreen()">Full Screen</button>
 
 <script>
     let timer;
@@ -112,30 +110,25 @@
     let isTimerRunning = false;
     let isWorkSession = true; // Track if it's a work session or break
 
+    const sessionTypeDisplay = document.getElementById('sessionType');
     const timerDisplay = document.getElementById('timerDisplay');
     const startButton = document.getElementById('startButton');
     const pauseButton = document.getElementById('pauseButton');
     const resetButton = document.getElementById('resetButton');
-    const minimalControls = document.getElementById('minimalControls');
-    const productivityControls = document.getElementById('productivityControls');
-    const productivityRange = document.getElementById('productivityRange');
 
     function adjustTimer(minutes) {
-        const newTime = Math.max(parseInt(productivityRange.value) + minutes, 1);
-        productivityRange.value = newTime;
-        updateTimerLength();
+        const newTime = Math.max(parseInt(timerDisplay.textContent) + minutes, 1);
+        timerDisplay.textContent = newTime;
     }
 
     function startTimer() {
         if (!isTimerRunning) {
-            const timerLengthSeconds = productivityRange.value * 60;
+            const timerLengthSeconds = parseInt(timerDisplay.textContent) * 60;
             timeLeft = timerLengthSeconds;
-            updateTimerDisplay();
             timer = setInterval(decrementTimer, 1000);
             isTimerRunning = true;
             toggleControls(false); // Hide main controls during timer
-            minimalControls.style.display = 'block'; // Show minimal cancel button
-            productivityControls.style.display = 'none'; // Hide productivity controls
+            toggleFullscreen(); // Enter fullscreen mode
         }
     }
 
@@ -155,16 +148,16 @@
 
     function startBreak() {
         isWorkSession = false;
-        productivityRange.value = 5; // 5 minutes break
-        updateTimerLength();
+        sessionTypeDisplay.textContent = 'BREAK';
+        timerDisplay.textContent = '5'; // 5 minutes break
         resetTimer();
         startTimer();
     }
 
     function startWorkSession() {
         isWorkSession = true;
-        productivityRange.value = 25; // 25 minutes work session
-        updateTimerLength();
+        sessionTypeDisplay.textContent = 'FOCUS';
+        timerDisplay.textContent = '25'; // 25 minutes work session
         resetTimer();
         startTimer();
     }
@@ -173,23 +166,19 @@
         clearInterval(timer);
         isTimerRunning = false;
         toggleControls(true); // Show main controls when paused
-        minimalControls.style.display = 'none'; // Hide minimal cancel button
-        productivityControls.style.display = 'block'; // Show productivity controls
     }
 
     function resetTimer() {
         clearInterval(timer);
         isTimerRunning = false;
         toggleControls(true); // Show main controls after reset
-        minimalControls.style.display = 'none'; // Hide minimal cancel button
-        productivityControls.style.display = 'block'; // Show productivity controls
-        timeLeft = productivityRange.value * 60;
         updateTimerDisplay();
     }
 
     function cancelTimer() {
         pauseTimer();
         resetTimer();
+        sessionTypeDisplay.textContent = 'FOCUS';
     }
 
     function updateTimerDisplay() {
@@ -199,17 +188,20 @@
         timerDisplay.textContent = `${minutes}:${formattedSeconds}`;
     }
 
-    function updateTimerLength() {
-        const minutes = productivityRange.value;
-        if (!isTimerRunning) {
-            timerDisplay.textContent = `${minutes}:00`;
-        }
-    }
-
     function toggleControls(disabled) {
         startButton.disabled = !disabled;
         pauseButton.disabled = disabled;
         resetButton.disabled = disabled;
+    }
+
+    function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        }
     }
 </script>
 
