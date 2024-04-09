@@ -59,6 +59,16 @@
         #productivityControls label, #productivityControls input {
             font-size: 24px; /* Productivity label and input font size */
         }
+        #sessionType {
+            font-size: 24px;
+            margin-top: 10px;
+        }
+        #sessionType.break {
+            color: #f44336; /* Red for break */
+        }
+        #sessionType.focus {
+            color: #4caf50; /* Green for focus */
+        }
         #minimalControls {
             display: none; /* Hide minimal controls by default */
         }
@@ -92,6 +102,8 @@
             <label for="productivityRange">Productivity: </label>
             <input type="range" min="1" max="60" value="25" id="productivityRange" onchange="updateTimerLength()">
         </div>
+
+        <div id="sessionType">FOCUS</div>
     </div>
 </div>
 
@@ -108,6 +120,7 @@
     const minimalControls = document.getElementById('minimalControls');
     const productivityControls = document.getElementById('productivityControls');
     const productivityRange = document.getElementById('productivityRange');
+    const sessionTypeDisplay = document.getElementById('sessionType');
 
     function adjustTimer(minutes) {
         const newTime = Math.max(parseInt(productivityRange.value) + minutes, 1);
@@ -126,6 +139,7 @@
             minimalControls.style.display = 'block'; // Show minimal cancel button
             productivityControls.style.display = 'none'; // Hide productivity controls
             hideOtherButtons();
+            enterFullscreen(); // Enter fullscreen mode
         }
     }
 
@@ -145,6 +159,7 @@
 
     function startBreak() {
         isWorkSession = false;
+        updateSessionTypeDisplay('BREAK');
         productivityRange.value = 5; // 5 minutes break
         updateTimerLength();
         resetTimer();
@@ -153,6 +168,7 @@
 
     function startWorkSession() {
         isWorkSession = true;
+        updateSessionTypeDisplay('FOCUS');
         productivityRange.value = 25; // 25 minutes work session
         updateTimerLength();
         resetTimer();
@@ -166,29 +182,31 @@
         minimalControls.style.display = 'none'; // Hide minimal cancel button
         productivityControls.style.display = 'block'; // Show productivity controls
         showOtherButtons();
+        exitFullscreen(); // Exit fullscreen mode
     }
 
     function resetTimer() {
         clearInterval(timer);
         isTimerRunning = false;
-        isWorkSession = true;
         toggleControls(true); // Show main controls after reset
         minimalControls.style.display = 'none'; // Hide minimal cancel button
         productivityControls.style.display = 'block'; // Show productivity controls
         timeLeft = productivityRange.value * 60;
         updateTimerDisplay();
         showOtherButtons();
+        exitFullscreen(); // Exit fullscreen mode
     }
 
     function cancelTimer() {
         pauseTimer();
         resetTimer();
+        updateSessionTypeDisplay('FOCUS'); // Reset session type to FOCUS
     }
 
     function updateTimerDisplay() {
         const minutes = Math.floor(timeLeft / 60);
-        const seconds = timeLeft % 60;
-        const formattedSeconds = seconds < 10 ? `0${seconds}` : `${seconds}`;
+        const seconds
+                const formattedSeconds = seconds < 10 ? `0${seconds}` : `${seconds}`;
         timerDisplay.textContent = `${minutes}:${formattedSeconds}`;
     }
 
@@ -216,6 +234,35 @@
         pauseButton.style.display = 'inline-block';
         resetButton.style.display = 'inline-block';
     }
+
+    function updateSessionTypeDisplay(sessionType) {
+        sessionTypeDisplay.textContent = sessionType;
+        sessionTypeDisplay.className = sessionType.toLowerCase(); // Use session type as class for styling
+    }
+
+    function enterFullscreen() {
+        const container = document.getElementById('container');
+        if (container.requestFullscreen) {
+            container.requestFullscreen();
+        } else if (container.webkitRequestFullscreen) { /* Safari */
+            container.webkitRequestFullscreen();
+        } else if (container.msRequestFullscreen) { /* IE11 */
+            container.msRequestFullscreen();
+        }
+    }
+
+    function exitFullscreen() {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) { /* Safari */
+            document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) { /* IE11 */
+            document.msExitFullscreen();
+        }
+    }
+
+    // Automatically start the first work session when the page loads
+    window.onload = startWorkSession;
 </script>
 
 </body>
