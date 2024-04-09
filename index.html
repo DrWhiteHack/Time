@@ -86,7 +86,7 @@
     </div>
 
     <div id="buttonContainer">
-        <button id="startButton" onclick="startTimer()">Start</button>
+        <button id="startButton" onclick="startTimer()">&#62;</button> <!-- Changed to > -->
         <button class="cancel" onclick="cancelTimer()">X</button>
     </div>
 </div>
@@ -113,6 +113,16 @@
             timer = setInterval(decrementTimer, 1000);
             isTimerRunning = true;
             startButton.disabled = true; // Disable start button during timer
+
+            // Enter full screen mode
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen();
+            }
+
+            // Keep the screen awake
+            if ('wakeLock' in navigator) {
+                navigator.wakeLock.request('screen');
+            }
         }
     }
 
@@ -133,7 +143,7 @@
     function startBreak() {
         isWorkSession = false;
         sessionTypeDisplay.textContent = 'BREAK';
-        timerDisplay.textContent = '5'; // 5 minutes break
+        timerDisplay.textContent = '5:00'; // 5 minutes break
         resetTimer();
         startTimer();
     }
@@ -141,7 +151,7 @@
     function startWorkSession() {
         isWorkSession = true;
         sessionTypeDisplay.textContent = 'FOCUS';
-        timerDisplay.textContent = '25'; // 25 minutes work session
+        timerDisplay.textContent = '25:00'; // 25 minutes work session
         resetTimer();
         startTimer();
     }
