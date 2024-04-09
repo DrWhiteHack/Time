@@ -59,15 +59,25 @@
         #productivityControls label, #productivityControls input {
             font-size: 24px; /* Productivity label and input font size */
         }
-        #sessionType {
-            font-size: 24px;
-            margin-top: 10px;
+        #sessionTypeContainer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
         }
-        #sessionType.break {
-            color: #f44336; /* Red for break */
+        #sessionType {
+            font-size: 36px;
+            font-weight: bold;
+            text-transform: uppercase;
+            padding: 10px 20px;
+            border-radius: 5px;
         }
         #sessionType.focus {
-            color: #4caf50; /* Green for focus */
+            background-color: #4caf50; /* Green for focus */
+        }
+        #sessionType.break {
+            background-color: #87CEEB; /* Sky blue for break */
+            color: #000;
         }
         #minimalControls {
             display: none; /* Hide minimal controls by default */
@@ -82,6 +92,10 @@
 <body>
 
 <div id="container">
+    <div id="sessionTypeContainer">
+        <div id="sessionType">FOCUS</div>
+    </div>
+
     <div id="timer">
         <h1 id="timerDisplay">25:00</h1>
 
@@ -102,8 +116,6 @@
             <label for="productivityRange">Productivity: </label>
             <input type="range" min="1" max="60" value="25" id="productivityRange" onchange="updateTimerLength()">
         </div>
-
-        <div id="sessionType">FOCUS</div>
     </div>
 </div>
 
@@ -136,7 +148,7 @@
             timer = setInterval(decrementTimer, 1000);
             isTimerRunning = true;
             toggleControls(false); // Hide main controls during timer
-            minimalControls.style.display = 'block'; // Show minimal cancel button
+                        minimalControls.style.display = 'block'; // Show minimal cancel button
             productivityControls.style.display = 'none'; // Hide productivity controls
             hideOtherButtons();
             enterFullscreen(); // Enter fullscreen mode
@@ -159,7 +171,9 @@
 
     function startBreak() {
         isWorkSession = false;
-        updateSessionTypeDisplay('BREAK');
+        sessionTypeDisplay.textContent = 'BREAK';
+        sessionTypeDisplay.classList.remove('focus');
+        sessionTypeDisplay.classList.add('break');
         productivityRange.value = 5; // 5 minutes break
         updateTimerLength();
         resetTimer();
@@ -168,7 +182,9 @@
 
     function startWorkSession() {
         isWorkSession = true;
-        updateSessionTypeDisplay('FOCUS');
+        sessionTypeDisplay.textContent = 'FOCUS';
+        sessionTypeDisplay.classList.remove('break');
+        sessionTypeDisplay.classList.add('focus');
         productivityRange.value = 25; // 25 minutes work session
         updateTimerLength();
         resetTimer();
@@ -200,13 +216,15 @@
     function cancelTimer() {
         pauseTimer();
         resetTimer();
-        updateSessionTypeDisplay('FOCUS'); // Reset session type to FOCUS
+        sessionTypeDisplay.textContent = 'FOCUS'; // Reset session type to FOCUS
+        sessionTypeDisplay.classList.remove('break');
+        sessionTypeDisplay.classList.add('focus');
     }
 
     function updateTimerDisplay() {
         const minutes = Math.floor(timeLeft / 60);
-        const seconds
-                const formattedSeconds = seconds < 10 ? `0${seconds}` : `${seconds}`;
+        const seconds = timeLeft % 60;
+        const formattedSeconds = seconds < 10 ? `0${seconds}` : `${seconds}`;
         timerDisplay.textContent = `${minutes}:${formattedSeconds}`;
     }
 
@@ -224,30 +242,20 @@
     }
 
     function hideOtherButtons() {
-        startButton.style.display = 'none';
-        pauseButton.style.display = 'none';
-        resetButton.style.display = 'none';
+        adjustButtons.style.display = 'none';
     }
 
     function showOtherButtons() {
-        startButton.style.display = 'inline-block';
-        pauseButton.style.display = 'inline-block';
-        resetButton.style.display = 'inline-block';
-    }
-
-    function updateSessionTypeDisplay(sessionType) {
-        sessionTypeDisplay.textContent = sessionType;
-        sessionTypeDisplay.className = sessionType.toLowerCase(); // Use session type as class for styling
+        adjustButtons.style.display = 'inline-block';
     }
 
     function enterFullscreen() {
-        const container = document.getElementById('container');
-        if (container.requestFullscreen) {
-            container.requestFullscreen();
-        } else if (container.webkitRequestFullscreen) { /* Safari */
-            container.webkitRequestFullscreen();
-        } else if (container.msRequestFullscreen) { /* IE11 */
-            container.msRequestFullscreen();
+        if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen();
+        } else if (document.documentElement.webkitRequestFullscreen) { /* Safari */
+            document.documentElement.webkitRequestFullscreen();
+        } else if (document.documentElement.msRequestFullscreen) { /* IE11 */
+            document.documentElement.msRequestFullscreen();
         }
     }
 
@@ -260,9 +268,6 @@
             document.msExitFullscreen();
         }
     }
-
-    // Automatically start the first work session when the page loads
-    window.onload = startWorkSession;
 </script>
 
 </body>
