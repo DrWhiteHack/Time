@@ -40,6 +40,8 @@
             border-radius: 5px;
             background-color: #333; /* Dark grey */
             color: #fff;
+            min-width: 120px; /* Set a minimum width for buttons */
+            height: 50px; /* Set a fixed height for buttons */
         }
         button.cancel {
             background-color: #333;
@@ -113,16 +115,6 @@
             timer = setInterval(decrementTimer, 1000);
             isTimerRunning = true;
             startButton.disabled = true; // Disable start button during timer
-
-            // Enter full screen mode
-            if (document.documentElement.requestFullscreen) {
-                document.documentElement.requestFullscreen();
-            }
-
-            // Keep the screen awake
-            if ('wakeLock' in navigator) {
-                navigator.wakeLock.request('screen');
-            }
         }
     }
 
@@ -133,10 +125,10 @@
             clearInterval(timer);
             isTimerRunning = false;
             if (isWorkSession) {
-                // Start the break automatically
+                // Start the break automatically after focus session ends
                 startBreak();
             } else {
-                // Start the work session automatically
+                // Start the work session automatically after break ends
                 startWorkSession();
             }
         }
@@ -162,16 +154,6 @@
         clearInterval(timer);
         isTimerRunning = false;
         startButton.disabled = false; // Re-enable start button
-
-        // Exit full screen mode
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        }
-
-        // Release screen wake lock
-        if ('wakeLock' in navigator && navigator.wakeLock) {
-            navigator.wakeLock.release();
-        }
     }
 
     function updateTimerDisplay() {
