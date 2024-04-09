@@ -11,7 +11,8 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #f5f5f5;
+            background-color: #000;
+            color: #fff;
             margin: 0;
         }
         #timer {
@@ -19,7 +20,7 @@
         }
         button {
             padding: 10px 20px;
-            font-size: 16px;
+            font-size: 20px;
             margin: 10px;
             cursor: pointer;
             border: none;
@@ -49,6 +50,8 @@
     </div>
 </div>
 
+<audio id="timerCompleteSound" src="https://www.soundjay.com/button/beep-07.wav"></audio>
+
 <script>
     let timer;
     let timeLeft;
@@ -59,6 +62,7 @@
     const resetButton = document.getElementById('resetButton');
     const productivityRange = document.getElementById('productivityRange');
     const productivityValue = document.getElementById('productivityValue');
+    const timerCompleteSound = document.getElementById('timerCompleteSound');
 
     function startTimer() {
         if (!isTimerRunning) {
@@ -70,6 +74,15 @@
             startButton.disabled = true;
             pauseButton.disabled = false;
             resetButton.disabled = false;
+
+            // Request screen wake lock (if available)
+            if ('wakeLock' in navigator) {
+                navigator.wakeLock.request('screen').then(() => {
+                    console.log('Screen wake lock activated');
+                }).catch((error) => {
+                    console.error('Failed to activate screen wake lock:', error);
+                });
+            }
         }
     }
 
@@ -78,10 +91,20 @@
         if (timeLeft < 0) {
             clearInterval(timer);
             isTimerRunning = false;
+            timerCompleteSound.play(); // Play sound on timer completion
             alert("Time's up!");
             startButton.disabled = false;
             pauseButton.disabled = true;
             resetButton.disabled = false;
+
+            // Release screen wake lock (if available)
+            if ('wakeLock' in navigator) {
+                navigator.wakeLock.release().then(() => {
+                    console.log('Screen wake lock released');
+                }).catch((error) => {
+                    console.error('Failed to release screen wake lock:', error);
+                });
+            }
         } else {
             updateTimerDisplay();
         }
@@ -101,6 +124,15 @@
         pauseButton.disabled = true;
         timeLeft = productivityRange.value * 60;
         updateTimerDisplay();
+
+        // Release screen wake lock (if available)
+        if ('wakeLock' in navigator) {
+            navigator.wakeLock.release().then(() => {
+                console.log('Screen wake lock released');
+            }).catch((error) => {
+                console.error('Failed to release screen wake lock:', error);
+            });
+        }
     }
 
     function updateTimerDisplay() {
