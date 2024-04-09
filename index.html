@@ -22,7 +22,7 @@
         }
         button {
             padding: 10px 20px;
-            font-size: 5vw; /* Responsive button font size */
+            font-size: 24px; /* Fixed button font size */
             margin: 10px;
             cursor: pointer;
             border: none;
@@ -31,6 +31,8 @@
             color: #fff;
         }
         button.cancel {
+            font-size: 24px; /* Cancel button font size */
+            padding: 10px 20px;
             background-color: #f44336; /* Red */
         }
         button:disabled {
@@ -41,27 +43,17 @@
             margin-top: 20px;
         }
         #adjustButtons button {
-            font-size: 5vw; /* Responsive adjust button font size */
+            font-size: 24px; /* Adjust button font size */
             margin: 0 10px;
-            padding: 5px 10px;
-            background-color: #555; /* Dark grey */
-        }
-        #minimalControls {
-            display: none;
-            margin-top: 20px;
-        }
-        #minimalControls button {
-            font-size: 5vw; /* Responsive minimal button font size */
             padding: 10px 20px;
-            background-color: #333; /* Dark grey */
+            background-color: #555; /* Dark grey */
         }
         #productivityControls {
             display: block;
             margin-top: 20px;
         }
         #productivityControls label, #productivityControls input {
-            display: inline-block;
-            font-size: 5vw; /* Responsive label and input font size */
+            font-size: 24px; /* Productivity label and input font size */
         }
     </style>
 </head>
@@ -172,4 +164,27 @@
     }
 
     function cancelTimer() {
-        pause
+        pauseTimer();
+        resetTimer();
+    }
+
+    function updateTimerDisplay() {
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        const formattedSeconds = seconds < 10 ? `0${seconds}` : `${seconds}`;
+        timerDisplay.textContent = `${minutes}:${formattedSeconds}`;
+    }
+
+    function updateTimerLength() {
+        const minutes = productivityRange.value;
+        if (!isTimerRunning) {
+            timerDisplay.textContent = `${minutes}:00`;
+        }
+    }
+
+    // Initial update of timer display
+    updateTimerLength();
+</script>
+
+</body>
+</html>
