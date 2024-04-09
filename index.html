@@ -40,7 +40,8 @@
             color: #fff;
         }
         button.cancel {
-            background-color: #f44336; /* Red */
+            background-color: #000;
+            color: #fff;
         }
         button:disabled {
             opacity: 0.5;
@@ -57,6 +58,9 @@
         }
         #productivityControls label, #productivityControls input {
             font-size: 24px; /* Productivity label and input font size */
+        }
+        #minimalControls {
+            display: none; /* Hide minimal controls by default */
         }
     </style>
 </head>
@@ -186,9 +190,6 @@
             timerDisplay.textContent = `${minutes}:00`;
         }
     }
-
-    // Initial update of timer display
-    updateTimerLength();
 </script>
 
 </body>
