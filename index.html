@@ -88,7 +88,7 @@
     </div>
 
     <div id="buttonContainer">
-        <button id="startButton" onclick="startTimer()">&#62;</button> <!-- Changed to > -->
+        <button id="startButton" onclick="toggleFullScreen()">&#62;</button>
         <button class="cancel" onclick="cancelTimer()">X</button>
     </div>
 </div>
@@ -108,6 +108,14 @@
         timerDisplay.textContent = newTime;
     }
 
+    function toggleFullScreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().then(startTimer).catch(handleFullscreenError);
+        } else {
+            document.exitFullscreen().then(cancelTimer).catch(handleExitFullscreenError);
+        }
+    }
+
     function startTimer() {
         if (!isTimerRunning) {
             const timerLengthSeconds = parseInt(timerDisplay.textContent) * 60;
@@ -115,6 +123,11 @@
             timer = setInterval(decrementTimer, 1000);
             isTimerRunning = true;
             startButton.disabled = true; // Disable start button during timer
+
+            // Keep the screen awake
+            if ('wakeLock' in navigator) {
+                navigator.wakeLock.request('screen').catch(handleWakeLockError);
+            }
         }
     }
 
@@ -126,7 +139,7 @@
             isTimerRunning = false;
             if (isWorkSession) {
                 // Start the break automatically after focus session ends
-                startBreak();
+                startBreakTimer();
             } else {
                 // Start the work session automatically after break ends
                 startWorkSession();
@@ -134,26 +147,31 @@
         }
     }
 
-    function startBreak() {
+    function startBreakTimer() {
         isWorkSession = false;
         sessionTypeDisplay.textContent = 'BREAK';
-        timerDisplay.textContent = '5:00'; // 5 minutes break
-        resetTimer();
-        startTimer();
+        const breakTime = 5 * 60; // 5 minutes break
+        timeLeft = breakTime;
+        startTimer(); // Start the break timer automatically
     }
 
     function startWorkSession() {
         isWorkSession = true;
         sessionTypeDisplay.textContent = 'FOCUS';
-        timerDisplay.textContent = '25:00'; // 25 minutes work session
-        resetTimer();
-        startTimer();
+        const focusTime = 25 * 60; // 25 minutes work session
+        timeLeft = focusTime;
+        startTimer(); // Start the focus session timer automatically
     }
 
     function cancelTimer() {
         clearInterval(timer);
         isTimerRunning = false;
         startButton.disabled = false; // Re-enable start button
+
+        // Release screen wake lock
+        if ('wakeLock' in navigator && navigator.wakeLock) {
+            navigator.wakeLock.release().catch(handleWakeLockError);
+        }
     }
 
     function updateTimerDisplay() {
@@ -161,6 +179,18 @@
         const seconds = timeLeft % 60;
         const formattedSeconds = seconds < 10 ? `0${seconds}` : `${seconds}`;
         timerDisplay.textContent = `${minutes}:${formattedSeconds}`;
+    }
+
+    function handleFullscreenError(error) {
+        console.error('Failed to enter fullscreen mode:', error);
+    }
+
+    function handleExitFullscreenError(error) {
+        console.error('Failed to exit fullscreen mode:', error);
+    }
+
+    function handleWakeLockError(error) {
+        console.error('Failed to acquire/release wake lock:', error);
     }
 </script>
 
