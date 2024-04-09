@@ -89,7 +89,7 @@
 
     <div id="buttonContainer">
         <button id="startButton" onclick="toggleFullScreen()">&#62;</button>
-        <button class="cancel" onclick="cancelTimer()">X</button>
+        <button class="cancel" onclick="cancelFullScreen()">X</button>
     </div>
 </div>
 
@@ -112,6 +112,12 @@
         if (!document.fullscreenElement) {
             document.documentElement.requestFullscreen().then(startTimer).catch(handleFullscreenError);
         } else {
+            document.exitFullscreen().then(cancelTimer).catch(handleExitFullscreenError);
+        }
+    }
+
+    function cancelFullScreen() {
+        if (document.fullscreenElement) {
             document.exitFullscreen().then(cancelTimer).catch(handleExitFullscreenError);
         }
     }
@@ -152,6 +158,7 @@
         sessionTypeDisplay.textContent = 'BREAK';
         const breakTime = 5 * 60; // 5 minutes break
         timeLeft = breakTime;
+        updateTimerDisplay(); // Update timer display immediately
         startTimer(); // Start the break timer automatically
     }
 
@@ -160,6 +167,7 @@
         sessionTypeDisplay.textContent = 'FOCUS';
         const focusTime = 25 * 60; // 25 minutes work session
         timeLeft = focusTime;
+        updateTimerDisplay(); // Update timer display immediately
         startTimer(); // Start the focus session timer automatically
     }
 
