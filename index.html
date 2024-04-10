@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pomodoro Timer</title>
     <style>
-        body {
-            height: 100vh;
+        html, body {
+            height: 100%;
             margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: Arial, sans-serif;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             background-color: #000;
@@ -22,31 +23,30 @@
             width: 100%;
         }
         #sessionType {
-            font-size: 2em;
+            font-size: 36px;
             font-weight: bold;
             text-transform: uppercase;
             margin-bottom: 20px;
         }
         #timer {
-            font-size: 8em;
-            font-weight: bold;
+            font-size: 10vw; /* Responsive font size based on viewport width */
         }
         button {
-            font-size: 1.5em;
-            padding: 15px 30px;
+            font-size: 24px; /* Fixed button font size */
+            padding: 10px 20px;
             margin: 10px;
             cursor: pointer;
             border: none;
             border-radius: 5px;
             background-color: #333; /* Dark grey */
             color: #fff;
-            min-width: 120px;
-            height: 60px;
+            min-width: 120px; /* Set a minimum width for buttons */
+            height: 50px; /* Set a fixed height for buttons */
         }
         button.cancel {
             background-color: #333;
-            font-size: 2em;
-            padding: 10px 20px;
+            font-size: 36px;
+            padding: 5px 15px;
         }
         button:disabled {
             opacity: 0.5;
@@ -68,7 +68,7 @@
         }
         @media (max-width: 600px) {
             #timer {
-                font-size: 6em;
+                font-size: 8vw; /* Adjust font size for smaller screens */
             }
         }
     </style>
@@ -97,7 +97,7 @@
     let timer;
     let timeLeft;
     let isTimerRunning = false;
-    let isWorkSession = true;
+    let isWorkSession = true; // Track if it's a work session or break
 
     const sessionTypeDisplay = document.getElementById('sessionType');
     const timerDisplay = document.getElementById('timerDisplay');
@@ -128,8 +128,9 @@
             timeLeft = timerLengthSeconds;
             timer = setInterval(decrementTimer, 1000);
             isTimerRunning = true;
-            startButton.disabled = true;
+            startButton.disabled = true; // Disable start button during timer
 
+            // Keep the screen awake
             if ('wakeLock' in navigator) {
                 navigator.wakeLock.request('screen').catch(handleWakeLockError);
             }
@@ -143,8 +144,10 @@
             clearInterval(timer);
             isTimerRunning = false;
             if (isWorkSession) {
+                // Start the break automatically after focus session ends
                 startBreakTimer();
             } else {
+                // Start the work session automatically after break ends
                 startWorkSession();
             }
         }
@@ -153,26 +156,27 @@
     function startBreakTimer() {
         isWorkSession = false;
         sessionTypeDisplay.textContent = 'BREAK';
-        const breakTime = 5 * 60;
+        const breakTime = 5 * 60; // 5 minutes break
         timeLeft = breakTime;
-        updateTimerDisplay();
-        startTimer();
+        updateTimerDisplay(); // Update timer display immediately
+        startTimer(); // Start the break timer automatically
     }
 
     function startWorkSession() {
         isWorkSession = true;
         sessionTypeDisplay.textContent = 'FOCUS';
-        const focusTime = 25 * 60;
+        const focusTime = 25 * 60; // 25 minutes work session
         timeLeft = focusTime;
-        updateTimerDisplay();
-        startTimer();
+        updateTimerDisplay(); // Update timer display immediately
+        startTimer(); // Start the focus session timer automatically
     }
 
     function cancelTimer() {
         clearInterval(timer);
         isTimerRunning = false;
-        startButton.disabled = false;
+        startButton.disabled = false; // Re-enable start button
 
+        // Release screen wake lock
         if ('wakeLock' in navigator && navigator.wakeLock) {
             navigator.wakeLock.release().catch(handleWakeLockError);
         }
